@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+
+
+    <form id="form_start" style="display: initial;">
+        <input id="width" type="number" placeholder="width" />
+        <input id="height" type="number" placeholder="height" />
+        <button type="submit" id="start">Start</button>
+    </form>
+    
+    <form id="form_reveal" style="display: hidden;">
+        <input id="x" type="number" placeholder="x" />
+        <input id="y" type="number" placeholder="y" />
+        <button type="submit" id="reveal">Reveal</button>
+    </form>
+
+    <div id="grid">
+
+    </div>
+
+    <div>
+        <br/><br/>
+        -2 is unknown cell <br/>
+        -1 is bomb <br/>
+        0, 1, 2, ... is the number of bombs around <br/>
+    </div>
+
+    <br/><br/><br/><br/><br/>
+    This file should be running on a seperate server than the flask server.
+
+    <script>
+
+        const MainURL = 'http://127.0.0.1:5000';
+
+        async function postData(url = '', data = {}) {
+            const response = await fetch(url, {
+                method: 'POST', mode: 'cors', cache: 'no-cache', credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                redirect: 'follow',
+                referrerPolicy: 'no-referrer',
+                body: JSON.stringify(data)
+            });
+            return response.json(); // parses JSON response into native JavaScript objects
+        }
+
+        function setGrid(data) {
+            griddiv = document.getElementById("grid");
+            const res = []
+            for(let i=0;i<data.h;i++)
+                res.push( data.grid.slice(i*data.w, (i+1)*data.w).join('&#9;') );
+            const final = res.join('<br/>')
+            griddiv.innerHTML = final;
+        }
+
+        const form_Start = document.getElementById("form_start");
+        form_start.addEventListener("submit", e => {
+            e.preventDefault();
+            w = parseInt(document.getElementById("width").value);
+            h = parseInt(document.getElementById("height").value);
+            console.log({w, h});
+            postData(MainURL + '/start', { w, h }).then(data => {
+                console.log(data);
+                setGrid(data);
+            })
+        })
+        
+        const form_reveal = document.getElementById("form_reveal");
+        form_reveal.addEventListener("submit", e => {
+            e.preventDefault();
+            x = parseInt(document.getElementById("x").value);
+            y = parseInt(document.getElementById("y").value);
+            console.log({x, y});
+            postData(MainURL + '/reveal', { x, y }).then(data => {
+                console.log(data);
+                setGrid(data);
+            });
+        })
+    </script>
+</body>
+</html>
